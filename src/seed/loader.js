@@ -16,10 +16,10 @@
             function(node, callback) {
                 var oldCallback = node.onreadystatechange;
                 node.onreadystatechange = function() {
+                    oldCallback && oldCallback();
                     var rs = node.readyState;
                     if (rs === 'loaded' || rs === 'complete') {
                         node.onreadystatechange = null;
-                        oldCallback && oldCallback();
                         callback.call(this);
                     }
                 };
