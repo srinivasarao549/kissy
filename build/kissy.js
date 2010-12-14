@@ -267,6 +267,8 @@ build time: ${build.time}
 
     S.__init();
 
+    return S;
+
 })(this, 'KISSY');
 /**
  * @module  lang
@@ -565,6 +567,43 @@ build time: ${build.time}
         },
 
         /**
+         * Creates a serialized string of an array or object.
+         * <code>
+         * {foo: 1, bar: 2}    // -> 'foo=1&bar=2'
+         * {foo: 1, bar: [2, 3]}    // -> 'foo=1&bar[]=2&bar[]=3'
+         * {foo: '', bar: 2}    // -> 'foo=&bar=2'
+         * {foo: undefined, bar: 2}    // -> 'foo=undefined&bar=2'
+         * {foo: true, bar: 2}    // -> 'foo=true&bar=2'
+         * </code>
+         */
+        param: function(o, sep) {
+            if (!S.isPlainObject(o)) return EMPTY;
+            sep = sep || SEP;
+
+            var buf = [], key, val;
+            for (key in o) {
+                val = o[key];
+                key = encodeURIComponent(key);
+
+                // val is valid non-array value
+                if (isValidParamValue(val)) {
+                    buf.push(key, '=', encodeURIComponent(val + EMPTY), sep);
+                }
+                // val is not empty array
+                else if (S.isArray(val) && val.length) {
+                    for (var i = 0, len = val.length; i < len; ++i) {
+                        if (isValidParamValue(val[i])) {
+                            buf.push(key, BRACKET + '=', encodeURIComponent(val[i] + EMPTY), sep);
+                        }
+                    }
+                }
+                // ignore other cases, including empty array, Function, RegExp, Date etc.
+            }
+            buf.pop();
+            return buf.join(EMPTY);
+        },
+
+        /**
          * Parses a URI-like query string and returns an object composed of parameter/value pairs.
          * <code>
          * 'section=blog&id=45'        // -> {section: 'blog', id: '45'}
@@ -604,40 +643,23 @@ build time: ${build.time}
         },
 
         /**
-         * Creates a serialized string of an array or object.
-         * <code>
-         * {foo: 1, bar: 2}    // -> 'foo=1&bar=2'
-         * {foo: 1, bar: [2, 3]}    // -> 'foo=1&bar[]=2&bar[]=3'
-         * {foo: '', bar: 2}    // -> 'foo=&bar=2'
-         * {foo: undefined, bar: 2}    // -> 'foo=undefined&bar=2'
-         * {foo: true, bar: 2}    // -> 'foo=true&bar=2'
-         * </code>
+         * Evalulates a script in a global context.
          */
-        param: function(o, sep) {
-            if (!S.isPlainObject(o)) return EMPTY;
-            sep = sep || SEP;
+        globalEval: function(data) {
+            if (data && RE_NOT_WHITE.test(data)) {
+                // Inspired by code by Andrea Giammarchi
+                // http://webreflection.blogspot.com/2007/08/global-scope-evaluation-and-dom.html
+                var head = doc.getElementsByTagName('head')[0] || docElem,
+                    script = doc.createElement('script');
 
-            var buf = [], key, val;
-            for (key in o) {
-                val = o[key];
-                key = encodeURIComponent(key);
+                // It works! All browsers support!
+                script.text = data;
 
-                // val is valid non-array value
-                if (isValidParamValue(val)) {
-                    buf.push(key, '=', encodeURIComponent(val + EMPTY), sep);
-                }
-                // val is not empty array
-                else if (S.isArray(val) && val.length) {
-                    for (var i = 0, len = val.length; i < len; ++i) {
-                        if (isValidParamValue(val[i])) {
-                            buf.push(key, BRACKET + '=', encodeURIComponent(val[i] + EMPTY), sep);
-                        }
-                    }
-                }
-                // ignore other cases, including empty array, Function, RegExp, Date etc.
+                // Use insertBefore instead of appendChild to circumvent an IE6 bug.
+                // This arises when a base node is used.
+                head.insertBefore(script, head.firstChild);
+                head.removeChild(script);
             }
-            buf.pop();
-            return buf.join(EMPTY);
         },
 
         /**
@@ -687,26 +709,6 @@ build time: ${build.time}
                     }
                 }
             };
-        },
-
-        /**
-         * Evalulates a script in a global context.
-         */
-        globalEval: function(data) {
-            if (data && RE_NOT_WHITE.test(data)) {
-                // Inspired by code by Andrea Giammarchi
-                // http://webreflection.blogspot.com/2007/08/global-scope-evaluation-and-dom.html
-                var head = doc.getElementsByTagName('head')[0] || docElem,
-                    script = doc.createElement('script');
-
-                // It works! All browsers support!
-                script.text = data;
-
-                // Use insertBefore instead of appendChild to circumvent an IE6 bug.
-                // This arises when a base node is used.
-                head.insertBefore(script, head.firstChild);
-                head.removeChild(script);
-            }
         },
 
         /**
@@ -5018,9 +5020,9 @@ KISSY.add('json', function (S) {
     };
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /***
  * @module  ajax
@@ -5048,21 +5050,23 @@ KISSY.add('ajax', function(S, undef) {
             contentType: 'application/x-www-form-urlencoded',
             async: true,
             data: null,
-            xhr: win.XMLHttpRequest ?
-                function() {
-                    return new win.XMLHttpRequest();
-                } :
-                function() {
-                    try {
-                        // ie 6 下请求缓存中的资源无法正确返回 xhr.responseText, 需要使用老版本的 XMLHTTP
-                        // jQuery 没有考虑请求缓存的情况
-                        return new win.ActiveXObject(
-                            S.UA.ie == 6 ?
-                                'Msxml2.XMLHTTP.5.0' :
-                                'Microsoft.XMLHTTP');
-                    } catch(e) {
-                    }
-                },
+            xhr: win.ActiveXObject ?
+                 function() {
+                     if (win.XmlHttpRequest) {
+                         try {
+                             return new win.XMLHttpRequest();
+                         } catch(xhrError) {
+                         }
+                     }
+
+                     try {
+                         return new win.ActiveXObject('Microsoft.XMLHTTP');
+                     } catch(activeError) {
+                     }
+                 } :
+                 function() {
+                     return new win.XMLHttpRequest();
+                 },
             accepts: {
                 xml: 'application/xml, text/xml',
                 html: 'text/html',
