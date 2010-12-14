@@ -1,0 +1,78 @@
+loader 用例：
+
+
+1、添加单个外部文件
+<code>
+KISSY.add("direct-promo", {
+	fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
+});
+
+KISSY.use("direct-promo", function (S) {
+	// ...
+});
+</code>
+
+2、添加多个外部文件
+<code>
+KISSY.add({
+	"direct-promo", {
+		fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
+	}, {
+	"fp-mods": {
+		fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
+	}
+});
+
+KISSY.use("direct-promo,fp-mods", function (S) {
+	// ...
+});
+</code>
+
+3、添加模块
+<code>
+KISSY.add("mod1", function () {
+	// ...
+});
+
+KISSY.use("mod1", function (S) {
+	// ...
+});
+</code>
+
+4、模块依赖
+<code>
+KISSY.add("mod1", function () {
+	// ...
+});
+KISSY.add("mod2", function () {
+		// ...
+	}, {
+		requires: ["mod1"]
+});
+
+KISSY.use("mod1,mod2", function (S) {
+	// ...
+});
+</code>
+
+4、确保模块执行顺序
+<code>
+KISSY.add("mod1", function () {
+		// ...
+	}, {
+		attach: false
+});
+KISSY.add("mod2", function () {
+		// ...
+	}, {
+		attach: false
+		requires: ["mod1"]
+});
+
+KISSY.use("mod1,mod2", function (S) {
+	// ...
+}, {
+	order: true
+});
+</code>
+
