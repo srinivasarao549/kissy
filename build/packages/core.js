@@ -1,7 +1,7 @@
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:45
+build time: ${build.time}
 */
 /**
  * @module  ua
@@ -141,6 +141,7 @@ KISSY.add('ua', function(S) {
  *
  * TODO:
  *  - test mobile
+ *  - 3Q 大战后，360 去掉了 UA 信息中的 360 信息，需采用 res 方法去判断
  *
  */
 /**
@@ -196,9 +197,9 @@ KISSY.add('ua-extra', function(S) {
     S.mix(UA, o);
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  dom
@@ -2257,7 +2258,7 @@ build time: ${build.time}
  * @module  event
  * @author  lifesinger@gmail.com
  */
-KISSY.add('event', function(S, undefined) {
+KISSY.add('event', function(S, undef) {
 
     var doc = document,
         DOM = S.DOM,
@@ -2391,7 +2392,7 @@ KISSY.add('event', function(S, undefined) {
                 }
 
                 // remove(el, type) or fn 已移除光
-                if (fn === undefined || len === 0) {
+                if (fn === undef || len === 0) {
                     if (!target.isCustomEventTarget) {
                         special = Event.special[type] || { };
                         simpleRemove(target, special.fix || type, eventsType.handle);
@@ -2404,7 +2405,7 @@ KISSY.add('event', function(S, undefined) {
             }
 
             // remove(el) or type 已移除光
-            if (type === undefined || S.isEmptyObject(events)) {
+            if (type === undef || S.isEmptyObject(events)) {
                 for (type in events) {
                     Event.remove(target, type);
                 }
@@ -2422,17 +2423,19 @@ KISSY.add('event', function(S, undefined) {
 
             var ret, i = 0, len = listeners.length, listener;
 
-            // 让 nodelist 等集合，能自定义 scope
-
             for (; i < len; ++i) {
                 listener = listeners[i];
                 ret = listener.fn.call(listener.scope, event);
 
-                // 自定义事件对象，可以用 return false 来立刻停止后续监听函数
-                // 注意：return false 仅停止当前 target 的后续监听函数，并不会阻止冒泡
-                // 目前没有实现自定义事件对象的冒泡，因此 return false 和 stopImmediatePropagation 效果是一样的
-                if ((ret === false && target.isCustomEventTarget) ||
-                    event.isImmediatePropagationStopped) {
+                // 和 jQuery 逻辑保持一致
+                // return false 等价 preventDefault + stopProgation
+                if (ret !== undef) {
+                    event.result = ret;
+                    if (ret === false) {
+                        event.halt();
+                    }
+                }
+                if (event.isImmediatePropagationStopped) {
                     break;
                 }
             }
@@ -2830,9 +2833,9 @@ KISSY.add('event-focusin', function(S) {
  *  - webkit 和 opera 已支持 DOMFocusIn/DOMFocusOut 事件，但上面的写法已经能达到预期效果，暂时不考虑原生支持。
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  node
@@ -3178,9 +3181,9 @@ KISSY.add('node-attach', function(S, undefined) {
     delete NLP.fire;
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /*
     http://www.JSON.org/json2.js
@@ -4007,9 +4010,9 @@ KISSY.add('ajax', function(S, undef) {
  *   - [玉伯] 去掉 getJSON 接口，增加 jsonp 接口
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module anim-easing
@@ -4666,9 +4669,9 @@ KISSY.add('anim-node-plugin', function(S, undefined) {
 
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  cookie
@@ -4752,9 +4755,9 @@ KISSY.add('cookie', function(S) {
  *     独立成静态工具类的方式更优。
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  Attribute

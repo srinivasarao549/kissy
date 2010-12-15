@@ -1277,13 +1277,57 @@ build time: ${build.time}
     mix(S, loader);
 
     /**
+     * get base from src
+     * @param src script source url
+     * @return base for kissy
+     * @example:
+     *   http://a.tbcdn.cn/s/kissy/1.1.5/??kissy-min.js,suggest/suggest-pkg-min.js
+     *   http://a.tbcdn.cn/??s/kissy/1.1.5/kissy-min.js,s/kissy/1.1.5/suggest/suggest-pkg-min.js
+     *   http://a.tbcdn.cn/??s/kissy/1.1.5/suggest/suggest-pkg-min.js,s/kissy/1.1.5/kissy-min.js
+     */
+    // notice: timestamp
+    var baseReg = /^(.*)(seed|kissy)(-min)?\.js/i,
+        baseTestReg = /(seed|kissy)(-min)?\.js/;
+
+    // TODO: configurable for ?? and ,
+    function getBaseUrl(src) {
+        var parts = src.split(/\s*,\s*/);
+        var base,
+            part0 = parts[0],
+            index = part0.indexOf('??');
+        // no combo
+        if (index == -1) {
+            base = src.replace(baseReg, '$1');
+        } else {
+            base = part0.substring(0, index);
+            var part01 = part0.substring(index + 2, part0.length);
+            // combo first
+            // notice use match better than test
+            if (part01.match(baseTestReg)) {
+                base += part01.replace(baseReg, '$1');
+            }
+            // combo after first
+            else {
+                for (var i = 1; i < parts.length; i++) {
+                    var part = parts[i];
+                    if (part.match(baseTestReg)) {
+                        base += part.replace(baseReg, '$1');
+                        break;
+                    }
+                }
+            }
+        }
+        return base;
+    }
+
+    /**
      * Initializes loader.
      */
     S.__initLoader = function() {
         // get base from current script file path
         var scripts = doc.getElementsByTagName('script'),
             currentScript = scripts[scripts.length - 1],
-            base = currentScript.src.replace(/^(.*)(seed|kissy).*$/i, '$1');
+            base = getBaseUrl(currentScript.src);
 
         this.Env.mods = {}; // all added mods
         this.Env._loadQueue = {}; // information for loading and loaded mods
@@ -1335,9 +1379,9 @@ build time: ${build.time}
 
 })(KISSY);
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:45
+build time: ${build.time}
 */
 /**
  * @module  ua
@@ -1477,6 +1521,7 @@ KISSY.add('ua', function(S) {
  *
  * TODO:
  *  - test mobile
+ *  - 3Q 大战后，360 去掉了 UA 信息中的 360 信息，需采用 res 方法去判断
  *
  */
 /**
@@ -1532,9 +1577,9 @@ KISSY.add('ua-extra', function(S) {
     S.mix(UA, o);
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  dom
@@ -3593,7 +3638,7 @@ build time: ${build.time}
  * @module  event
  * @author  lifesinger@gmail.com
  */
-KISSY.add('event', function(S, undefined) {
+KISSY.add('event', function(S, undef) {
 
     var doc = document,
         DOM = S.DOM,
@@ -3727,7 +3772,7 @@ KISSY.add('event', function(S, undefined) {
                 }
 
                 // remove(el, type) or fn 已移除光
-                if (fn === undefined || len === 0) {
+                if (fn === undef || len === 0) {
                     if (!target.isCustomEventTarget) {
                         special = Event.special[type] || { };
                         simpleRemove(target, special.fix || type, eventsType.handle);
@@ -3740,7 +3785,7 @@ KISSY.add('event', function(S, undefined) {
             }
 
             // remove(el) or type 已移除光
-            if (type === undefined || S.isEmptyObject(events)) {
+            if (type === undef || S.isEmptyObject(events)) {
                 for (type in events) {
                     Event.remove(target, type);
                 }
@@ -3758,17 +3803,19 @@ KISSY.add('event', function(S, undefined) {
 
             var ret, i = 0, len = listeners.length, listener;
 
-            // 让 nodelist 等集合，能自定义 scope
-
             for (; i < len; ++i) {
                 listener = listeners[i];
                 ret = listener.fn.call(listener.scope, event);
 
-                // 自定义事件对象，可以用 return false 来立刻停止后续监听函数
-                // 注意：return false 仅停止当前 target 的后续监听函数，并不会阻止冒泡
-                // 目前没有实现自定义事件对象的冒泡，因此 return false 和 stopImmediatePropagation 效果是一样的
-                if ((ret === false && target.isCustomEventTarget) ||
-                    event.isImmediatePropagationStopped) {
+                // 和 jQuery 逻辑保持一致
+                // return false 等价 preventDefault + stopProgation
+                if (ret !== undef) {
+                    event.result = ret;
+                    if (ret === false) {
+                        event.halt();
+                    }
+                }
+                if (event.isImmediatePropagationStopped) {
                     break;
                 }
             }
@@ -4166,9 +4213,9 @@ KISSY.add('event-focusin', function(S) {
  *  - webkit 和 opera 已支持 DOMFocusIn/DOMFocusOut 事件，但上面的写法已经能达到预期效果，暂时不考虑原生支持。
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  node
@@ -4514,9 +4561,9 @@ KISSY.add('node-attach', function(S, undefined) {
     delete NLP.fire;
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /*
     http://www.JSON.org/json2.js
@@ -5343,9 +5390,9 @@ KISSY.add('ajax', function(S, undef) {
  *   - [玉伯] 去掉 getJSON 接口，增加 jsonp 接口
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module anim-easing
@@ -6002,9 +6049,9 @@ KISSY.add('anim-node-plugin', function(S, undefined) {
 
 });
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  cookie
@@ -6088,9 +6135,9 @@ KISSY.add('cookie', function(S) {
  *     独立成静态工具类的方式更优。
  */
 /*
-Copyright 2010, KISSY UI Library v1.1.6
+Copyright 2010, KISSY UI Library v1.1.7dev
 MIT Licensed
-build time: Dec 3 16:44
+build time: ${build.time}
 */
 /**
  * @module  Attribute

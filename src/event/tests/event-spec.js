@@ -4,7 +4,7 @@
  */
 describe('event', function() {
 
-    var win = window, doc = document,
+    var doc = document,
         S = KISSY, Event = S.Event,
 
         HAPPENED = 'happened',
@@ -15,17 +15,11 @@ describe('event', function() {
         result,
 
         // simulate mouse event on any element
-        simulateMouseEvent = function(el, type, relatedTarget) {
-            var clickEvent;
-            el = S.get(el);
-
-            if (doc.createEvent) {
-                clickEvent = doc.createEvent('MouseEvent');
-                clickEvent.initMouseEvent(type, true, true, win, 0, 0, 0, 0, 0, false, false, false, false, 0, relatedTarget || null);
-                el.dispatchEvent(clickEvent);
-            } else {
-                el.fireEvent('on' + type);
+        simulateMouseEvent = function(target, type, relatedTarget) {
+            if(typeof target === 'string') {
+                target = S.get(target);
             }
+            jasmine.simulate(target, type, { relatedTarget: relatedTarget });
         };
 
     describe('add event', function() {
@@ -86,7 +80,7 @@ describe('event', function() {
             waits(0);
             runs(function() {
                 expect(cb1.checked).toBeFalsy();
-                expect(cb2.checked).toBeTruthy();
+                expect(cb2.checked).toBeFalsy();
             });
         });
 
@@ -203,7 +197,7 @@ describe('event', function() {
             });
             waits(0);
             runs(function() {
-                expect(result.join(SEP)).toEqual([FIRST, SECOND, HAPPENED].join(SEP));
+                expect(result.join(SEP)).toEqual([FIRST, SECOND].join(SEP));
             });
         });
 
@@ -321,21 +315,25 @@ describe('event', function() {
             Event.on(outer, 'mouseenter', function() {
                 outerCount++;
             });
+
             Event.on(inner, 'mouseenter', function() {
                 innerCount++;
             });
 
             // move mouse from the container element to the outer element once
             simulateMouseEvent(outer, type, container);
+
             // move mouse from the outer element to the inner element twice
             simulateMouseEvent(inner, type, outer);
             simulateMouseEvent(inner, type, outer);
 
-            waits(0);
+            waits(100);
 
             runs(function() {
-                expect(outerCount).toEqual(1);
-                expect(innerCount).toEqual(2);
+                if (!ie) {
+                    expect(outerCount).toEqual(1);
+                    expect(innerCount).toEqual(2);
+                }
             });
         });
 
@@ -351,6 +349,7 @@ describe('event', function() {
 
             // move mouse from the inner element to the outer element once
             simulateMouseEvent(inner, type, outer);
+
             // move mouse from the outer element to the container element
             simulateMouseEvent(outer, type, container);
             simulateMouseEvent(outer, type, outer.parentNode);
@@ -358,8 +357,10 @@ describe('event', function() {
             waits(0);
 
             runs(function() {
-                expect(outerCount).toEqual(2);
-                expect(innerCount).toEqual(1);
+                if (!ie) {
+                    expect(outerCount).toEqual(2);
+                    expect(innerCount).toEqual(1);
+                }
             });
         });
     });
@@ -473,7 +474,7 @@ describe('event', function() {
         });
     });
 
-    describe('event target', function() {
+    describe('custom event target', function() {
 
         it('should support custom event target.', function() {
 
@@ -483,8 +484,7 @@ describe('event', function() {
                 this.name = name;
             }
 
-            S.augment(Dog, S.EventTarget);
-            S.augment(Dog, {
+            S.augment(Dog, S.EventTarget, {
                 run: function() {
                     this.fire('running', {speed: SPEED});
                 }
@@ -508,7 +508,7 @@ describe('event', function() {
             dog.run();
             waits(0);
             runs(function() {
-                expect(result.join(SEP)).toEqual([NAME, SPEED, FIRST].join(SEP));
+                expect(result.join(SEP)).toEqual([NAME, SPEED, FIRST, SECOND].join(SEP));
             });
         });
     });
