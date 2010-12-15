@@ -152,6 +152,7 @@
                 }
 
                 self.__attach(mod, function() {
+                    S.log(mod); // TODO 这儿为什么总是同一个文件？
                     if (mod._requires) {
                         mod.requires = mod._requires; // restore requires
                         delete mod._requires;
