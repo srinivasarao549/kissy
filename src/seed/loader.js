@@ -222,7 +222,7 @@
                     fn && fn(self);
                 });
                 mod.fns = undef; // 保证 attach 过的方法只执行一次
-                //S.log(mod.name + '.status = attached');
+                S.log(mod.name + '.status = attached');
             }
 
             mod.status = ATTACHED;
