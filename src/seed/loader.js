@@ -65,7 +65,7 @@
             // S.add({name: config, name2: config2, ...})
             if (S.isPlainObject(name)) {
                 S.each(name, function(v, k) {
-                    S.log("add mod '" + k + "'");
+//                    S.log("add mod '" + k + "'");
                     v.name = k;
                     if (mods[k]) mix(v, mods[k], false); // 保留之前添加的配置，但同名的属性以新添加的为准
                 });
@@ -135,8 +135,9 @@
             }
 
             // 有尚未 attached 的模块
-            for (i = 0; i < len && (mod = mods[modNames[i]]); i++) {
-                if (mod.status === ATTACHED) continue;
+            for (i = 0; i < len; i++) {
+                mod = mods[modNames[i]];
+                if (!mod || mod.status === ATTACHED) continue; // 如果 mod 未 add 或状态为已 attached ，跳过它
 
                 // 通过添加依赖，来保证调用顺序
                 if (config.order && i > 0) {
@@ -235,17 +236,23 @@
 
         /**
          * 判断是否所有指定 mod 都已 attached
+         * 如果有未 add 的 mod ，跳过它
          * @param modNames {Array}
          */
         __isAttached: function(modNames) {
             var mods = this.Env.mods, mod,
                 i = (modNames = S.makeArray(modNames)).length - 1;
 
-            for (; i >= 0 && (mod = mods[modNames[i]]); i--) {
+            for (; i >= 0; i--) {
+                mod = mods[modNames[i]];
+                if (!mod) {
+                    KISSY.log("mod '" + modNames[i] + "' is not added!"); // 压缩时不过滤该句，以方便线上调试
+                    continue;
+                }
                 if (mod.status !== ATTACHED) return false;
             }
 
-            return !!mod;
+            return true;
         },
 
         /**

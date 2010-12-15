@@ -8,25 +8,30 @@
 <script type="text/javascript" src="src/seed/loader.js"></script>
 <script type="text/javascript" src="src/seed/mods.js"></script>
 <script type="text/javascript">
-//KISSY.add("tt", function (S) {
-//	S.log("tt attached!");
-//});
-
-KISSY.add("tt2", {
-	path: "/js/t.js"
+KISSY.add("tt", function (S) {
+	S.log("tt attached!");
 });
 
-KISSY.use("tt", function (S) {
-	S.log("use tt!");
+KISSY.add({
+	"t": {
+		fullpath: "/js/t.js"
+	},
+	"t2": {
+		fullpath: "js/t2.js"
+	}
+});
+
+KISSY.use("t,t2", function (S) {
+	S.log("use!");
 });
 
 //KISSY.use("dd", function (S) {
 //	S.log("use dd!");
 //});
 
-KISSY.use("tt2", function (S) {
-	S.log("use tt2!");
-});
+//KISSY.use("tt2", function (S) {
+//	S.log("use tt2!");
+//});
 </script>
 </head>
 
