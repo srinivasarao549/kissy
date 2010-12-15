@@ -5,15 +5,27 @@
 <script type="text/javascript" src="src/seed/kissy.js"></script>
 <script type="text/javascript" src="src/seed/lang.js"></script>
 <script type="text/javascript" src="src/seed/web.js"></script>
-<script type="text/javascript" src="src/seed/loader2.js"></script>
+<script type="text/javascript" src="src/seed/loader.js"></script>
 <script type="text/javascript" src="src/seed/mods.js"></script>
 <script type="text/javascript">
-KISSY.add("tt", function (S) {
-	S.log("tt run!");
+//KISSY.add("tt", function (S) {
+//	S.log("tt attached!");
+//});
+
+KISSY.add("tt2", {
+	path: "/js/t.js"
 });
 
 KISSY.use("tt", function (S) {
-	S.log("use tt");
+	S.log("use tt!");
+});
+
+//KISSY.use("dd", function (S) {
+//	S.log("use dd!");
+//});
+
+KISSY.use("tt2", function (S) {
+	S.log("use tt2!");
 });
 </script>
 </head>

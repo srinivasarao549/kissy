@@ -1,6 +1,6 @@
 /**
  * @module loader
- * @author lifesinger@gmail.com, lijing00333@163.com, yiminghe@gmail.com
+ * @author lifesinger@gmail.com, lijing00333@163.com, yiminghe@gmail.com, oldj.wu@gmail.com
  */
 (function(S, undef) {
 
@@ -62,11 +62,12 @@
                 name = o;
             }
 
-            // S.add( { name: config } )
+            // S.add({name: config, name2: config2, ...})
             if (S.isPlainObject(name)) {
                 S.each(name, function(v, k) {
+                    S.log("add mod '" + k + "'");
                     v.name = k;
-                    if (mods[k]) mix(v, mods[k], false); // 保留之前添加的配置
+                    if (mods[k]) mix(v, mods[k], false); // 保留之前添加的配置，但同名的属性以新添加的为准
                 });
                 mix(mods, name);
             }
@@ -92,6 +93,7 @@
                 mods[name]['requires'] = oldr; // 不覆盖
 
                 // 对于 requires 都已 attached 的模块，比如 core 中的模块，直接 attach
+                // 参数中的 attach 如未指定或为 true ，则表示直接 attache，如为 false 表示暂不 attach
                 if ((mod['attach'] !== false) && self.__isAttached(mod.requires)) {
                     self.__attachMod(mod);
                 }
@@ -120,15 +122,16 @@
 
             var self = this, mods = self.Env.mods,
                 global = (config || 0).global,
-                i, len = modNames.length, mod, name, fired;
+                i, len = modNames.length, mod, name,
+                fired; // fired 标识 callback 是否被执行过，确保 callback 只被执行一次
 
             // 将 global 上的 mods, 移动到 instance 上
             if (global) self.__mixMods(global);
 
-            // 已经全部 attached, 直接执行回调即可
+            // mods 已经全部 attached, 直接执行回调即可
             if (self.__isAttached(modNames)) {
                 callback && callback(self);
-                return;
+                return self;
             }
 
             // 有尚未 attached 的模块
@@ -166,6 +169,8 @@
          * Attach a module and all required modules.
          */
         __attach: function(mod, callback, global) {
+            if (mod.status === ATTACHED) callback();
+
             var self = this, requires = mod['requires'] || [],
                 i = 0, len = requires.length;
 
@@ -228,6 +233,10 @@
             mod.status = ATTACHED;
         },
 
+        /**
+         * 判断是否所有指定 mod 都已 attached
+         * @param modNames {Array}
+         */
         __isAttached: function(modNames) {
             var mods = this.Env.mods, mod,
                 i = (modNames = S.makeArray(modNames)).length - 1;
@@ -236,7 +245,7 @@
                 if (mod.status !== ATTACHED) return false;
             }
 
-            return true;
+            return !!mod;
         },
 
         /**
@@ -419,4 +428,3 @@
     S.__APP_INIT_METHODS.push('__initLoader');
 
 })(KISSY);
-
