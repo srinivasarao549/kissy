@@ -17,11 +17,11 @@ KISSY.add({
 		fullpath: "/js/t.js"
 	},
 	"t2": {
-		fullpath: "js/t2.js"
+		fullpath: "/js/t2.js"
 	}
 });
 
-KISSY.use("t,t2", function (S) {
+KISSY.use("t,notadd,t2", function (S) {
 	S.log("use!");
 });
 

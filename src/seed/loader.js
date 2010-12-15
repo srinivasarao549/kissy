@@ -246,7 +246,7 @@
             for (; i >= 0; i--) {
                 mod = mods[modNames[i]];
                 if (!mod) {
-                    KISSY.log("mod '" + modNames[i] + "' is not added!"); // 压缩时不过滤该句，以方便线上调试
+                    S.log("mod '" + modNames[i] + "' is not added!", "warn");
                     continue;
                 }
                 if (mod.status !== ATTACHED) return false;
