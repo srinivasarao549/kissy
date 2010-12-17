@@ -294,6 +294,7 @@
                         _success();
                     },
                     error: function() {
+                        S.log('mod \'' + mod.name + '\' load error!', 'warn')
                         mod.status = ERROR;
                         _final();
                     },
@@ -408,6 +409,7 @@
 
             if (S.isFunction(error)) {
                 timer = S.later(function() {
+                    // 注意：发生超时后，node 实际上可能仍在下载，如果下载顺利完成仍然会执行
                     timer = undef;
                     error();
                 }, (timeout || this.Config.timeout) * 1000);
