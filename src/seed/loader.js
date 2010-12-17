@@ -140,6 +140,7 @@
                 if (!mod || mod.status === ATTACHED) continue; // 如果 mod 未 add 或状态为已 attached ，跳过它
 
                 // 通过添加依赖，来保证调用顺序
+                // TODO 暂不考虑 执行顺序 和 依赖关系 冲突的情况
                 if (config.order && i > 0) {
                     if (!mod.requires) mod.requires = [];
                     mod._requires = mod.requires.concat(); // 保留，以便还原
@@ -150,18 +151,25 @@
                         mod.requires.push(name);
                     }
                 }
+                S.log(mod.requires)
 
-                self.__attach(mod, function() {
-                    S.log(mod); // TODO 这儿为什么总是同一个文件？
-                    if (mod._requires) {
-                        mod.requires = mod._requires; // restore requires
-                        delete mod._requires;
+                self.__attach(mod, (function (mod) {
+                    return function() {
+                        S.log(mod)
+                        if (mod._requires) {
+                            mod.requires = mod._requires; // restore requires
+                            delete mod._requires;
+                        }
+                        if (!fired && self.__isAttached(modNames)) {
+                            fired = true;
+                            callback && callback(self);
+                        }
+
+                        for (var i = 0; i < len; i ++) {
+                            S.log(modNames[i] + ".requires = " + mods[modNames[i]].requires)
+                        }
                     }
-                    if (!fired && self.__isAttached(modNames)) {
-                        fired = true;
-                        callback && callback(self);
-                    }
-                }, global);
+                })(mod), global);
             }
 
             return self;
@@ -171,7 +179,10 @@
          * Attach a module and all required modules.
          */
         __attach: function(mod, callback, global) {
-            if (mod.status === ATTACHED) callback();
+            if (mod.status === ATTACHED) {
+                callback();
+                return;
+            }
 
             var self = this, requires = mod['requires'] || [],
                 i = 0, len = requires.length;
