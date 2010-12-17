@@ -151,11 +151,9 @@
                         mod.requires.push(name);
                     }
                 }
-                S.log(mod.requires)
 
                 self.__attach(mod, (function (mod) {
                     return function() {
-                        S.log(mod)
                         if (mod._requires) {
                             mod.requires = mod._requires; // restore requires
                             delete mod._requires;
@@ -163,10 +161,6 @@
                         if (!fired && self.__isAttached(modNames)) {
                             fired = true;
                             callback && callback(self);
-                        }
-
-                        for (var i = 0; i < len; i ++) {
-                            S.log(modNames[i] + ".requires = " + mods[modNames[i]].requires)
                         }
                     }
                 })(mod), global);
