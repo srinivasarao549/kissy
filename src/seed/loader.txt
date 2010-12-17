@@ -1,78 +1,62 @@
 loader 用例：
 
+add
 
-1、添加单个外部文件
-<code>
-KISSY.add("direct-promo", {
-	fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
-});
+1、添加一个模块
 
-KISSY.use("direct-promo", function (S) {
-	// ...
-});
-</code>
+KISSY.add(modname, fn[, config]);
 
-2、添加多个外部文件
-<code>
-KISSY.add({
-	"direct-promo", {
-		fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
-	}, {
-	"fp-mods": {
-		fullpath: "http://a.tbcdn.cn/p/fp/2010c/js/fp-direct-promo-min.js"
+其中 fn 为一个函数；
+config 为一个 Object ，可选。形式为：
+	{
+		attach: true 或 false,
+		requires: [modname1, modname2]
 	}
-});
 
-KISSY.use("direct-promo,fp-mods", function (S) {
-	// ...
-});
-</code>
 
-3、添加模块
-<code>
-KISSY.add("mod1", function () {
-	// ...
-});
+2、添加一个外部文件
 
-KISSY.use("mod1", function (S) {
-	// ...
-});
-</code>
+KISSY.add(modname, config);
 
-4、模块依赖
-<code>
-KISSY.add("mod1", function () {
-	// ...
-});
-KISSY.add("mod2", function () {
-		// ...
-	}, {
-		requires: ["mod1"]
-});
+其中 config 格式为：
+	{
+		path: js 文件相对路径,
+		fullpath: js 文件绝对路径,
+		csspath: css 文件相对路径,
+		cssfullpath: css 文件绝对路径,
+		requires: [modname1, modname2]
+	}
 
-KISSY.use("mod1,mod2", function (S) {
-	// ...
-});
-</code>
 
-4、确保模块执行顺序
-<code>
-KISSY.add("mod1", function () {
-		// ...
-	}, {
-		attach: false
-});
-KISSY.add("mod2", function () {
-		// ...
-	}, {
-		attach: false
-		requires: ["mod1"]
-});
+3、一次添加多个外部文件
 
-KISSY.use("mod1,mod2", function (S) {
-	// ...
-}, {
-	order: true
-});
-</code>
+KISSY.add({
+	modname1: config1,
+	modname2: config2,
+	modname3: config3
+})
+
+其中 config1、config2.. 的格式与上面“添加一个外部文件”的 config 格式一样。
+
+
+
+use
+
+1、使用一个模块
+
+KISSY.use(modname, callback[, config]);
+
+其中 callback 为指定模块 attach 后要回调的函数，config 为配置信息，格式为：
+	{
+		order: true 或 false, 是否保证 mod 的执行顺序，默认为 false
+		global: 默认为 KISSY. 当在 this.Env.mods 上找不到某个 mod 的属性时，会到 global.Env.mods 上去找
+	}
+
+
+2、使用多个模块
+
+KISSY.use(modnames, callback[, config]);
+
+其中 modnames 为一个字符串，形如："modname1,modname2,modname3"，即多个 modname 合并起来，并以逗号分隔。
+callback、config 与上面“使用一个模块”的情形相同。
 

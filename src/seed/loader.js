@@ -16,6 +16,7 @@
             function(node, callback) {
                 var oldCallback = node.onreadystatechange;
                 node.onreadystatechange = function() {
+//                    S.log(this.readyState);
                     oldCallback && oldCallback();
                     var rs = node.readyState;
                     if (rs === 'loaded' || rs === 'complete') {
@@ -294,7 +295,7 @@
                         _success();
                     },
                     error: function() {
-                        S.log('mod \'' + mod.name + '\' load error!', 'warn')
+                        S.log('mod \'' + mod.name + '\' load error!', 'warn');
                         mod.status = ERROR;
                         _final();
                     },
