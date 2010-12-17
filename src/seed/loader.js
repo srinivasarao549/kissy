@@ -153,6 +153,9 @@
                 }
 
                 self.__attach(mod, (function (mod) {
+                    // 当 load 的是外部文件时，这个函数执行时，外面的 for 可能已经执行完了，
+                    // 如果直接读 mod ，将读到最后一个 mod ，将不能正确恢复前几个 mod 的 require 信息
+                    // 所以这儿将 mod 用闭包再保存一下。
                     return function() {
                         if (mod._requires) {
                             mod.requires = mod._requires; // restore requires
